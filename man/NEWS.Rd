@@ -6,10 +6,24 @@
 \description{
 News for package 'fromo'
 
-\newcommand{\CRANpkg}{\href{http://CRAN.R-project.org/package=#1}{\pkg{#1}}}
+\newcommand{\CRANpkg}{\href{https://cran.r-project.org/package=#1}{\pkg{#1}}}
 \newcommand{\cranfromo}{\CRANpkg{fromo}}
 \newcommand{\fromo}{\href{https://github.com/shabbychef/fromo}}
 }
+\section{\fromo{} Version 0.2.0 (2019-01-12) }{
+
+\itemize{
+\item add \code{std_cumulants}
+\item add \code{\link{running_sum}}, \code{\link{running_mean}}.
+\item Kahan compensated summation for these.
+\item Welford object under the hood.
+\item add weighted moments computation.
+\item add time-based running window computations.
+\item some speedups for obviously fast cases: no checking of NA, etc.
+\item move github figures to location CRAN understands.
+}
+}
+
 \section{\fromo{} Version 0.1.3 (2016-04-04) }{
 
 \itemize{

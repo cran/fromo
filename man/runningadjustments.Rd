@@ -3,25 +3,30 @@
 \name{running_centered}
 \alias{running_centered}
 \alias{running_scaled}
+\alias{running_zscored}
 \alias{running_sharpe}
 \alias{running_tstat}
-\alias{running_zscored}
 \title{Compare data to moments computed over a sliding window.}
 \usage{
-running_centered(v, window = NULL, na_rm = FALSE, min_df = 0L,
-  lookahead = 0L, restart_period = 100L)
+running_centered(v, window = NULL, wts = NULL, na_rm = FALSE,
+  min_df = 0L, used_df = 1, lookahead = 0L, restart_period = 100L,
+  check_wts = FALSE, normalize_wts = FALSE)
 
-running_scaled(v, window = NULL, na_rm = FALSE, min_df = 0L,
-  lookahead = 0L, restart_period = 100L)
+running_scaled(v, window = NULL, wts = NULL, na_rm = FALSE, min_df = 0L,
+  used_df = 1, lookahead = 0L, restart_period = 100L, check_wts = FALSE,
+  normalize_wts = TRUE)
 
-running_zscored(v, window = NULL, na_rm = FALSE, min_df = 0L,
-  lookahead = 0L, restart_period = 100L)
+running_zscored(v, window = NULL, wts = NULL, na_rm = FALSE,
+  min_df = 0L, used_df = 1, lookahead = 0L, restart_period = 100L,
+  check_wts = FALSE, normalize_wts = TRUE)
 
-running_sharpe(v, window = NULL, na_rm = FALSE, compute_se = FALSE,
-  min_df = 0L, restart_period = 100L)
+running_sharpe(v, window = NULL, wts = NULL, na_rm = FALSE,
+  compute_se = FALSE, min_df = 0L, used_df = 1, restart_period = 100L,
+  check_wts = FALSE, normalize_wts = TRUE)
 
-running_tstat(v, window = NULL, na_rm = FALSE, min_df = 0L,
-  restart_period = 100L)
+running_tstat(v, window = NULL, wts = NULL, na_rm = FALSE, min_df = 0L,
+  used_df = 1, restart_period = 100L, check_wts = FALSE,
+  normalize_wts = TRUE)
 }
 \arguments{
 \item{v}{a vector}
@@ -30,12 +35,29 @@ running_tstat(v, window = NULL, na_rm = FALSE, min_df = 0L,
 If \code{NULL}, \code{NA_integer_}, \code{NA_real_} or \code{Inf} are given, equivalent
 to an infinite window size. If negative, an error will be thrown.}
 
+\item{wts}{an optional vector of weights. Weights are \sQuote{replication}
+weights, meaning a value of 2 is shorthand for having two observations
+with the corresponding \code{v} value. If \code{NULL}, corresponds to
+equal unit weights, the default. Note that weights are typically only meaningfully defined
+up to a multiplicative constant, meaning the units of weights are
+immaterial, with the exception that methods which check for minimum df will,
+in the weighted case, check against the sum of weights. For this reason,
+weights less than 1 could cause \code{NA} to be returned unexpectedly due
+to the minimum condition. When weights are \code{NA}, the same rules for checking \code{v}
+are applied. That is, the observation will not contribute to the moment
+if the weight is \code{NA} when \code{na_rm} is true. When there is no
+checking, an \code{NA} value will cause the output to be \code{NA}.}
+
 \item{na_rm}{whether to remove NA, false by default.}
 
 \item{min_df}{the minimum df to return a value, otherwise \code{NaN} is returned.
 This can be used to prevent \emph{e.g.} Z-scores from being computed on only 3
 observations. Defaults to zero, meaning no restriction, which can result in 
 infinite Z-scores during the burn-in period.}
+
+\item{used_df}{the number of degrees of freedom consumed, used in the denominator
+of the centered moments computation. These are subtracted from the number of
+observations.}
 
 \item{lookahead}{for some of the operations, the value is compared to 
 mean and standard deviation possibly using 'future' or 'past' information
@@ -45,8 +67,16 @@ the future.}
 \item{restart_period}{the recompute period. because subtraction of elements can cause
 loss of precision, the computation of moments is restarted periodically based on 
 this parameter. Larger values mean fewer restarts and faster, though less accurate
-results. Note that the code checks for negative second and fourth moments and
-recomputes when needed.}
+results.}
+
+\item{check_wts}{a boolean for whether the code shall check for negative
+weights, and throw an error when they are found. Default false for speed.}
+
+\item{normalize_wts}{a boolean for whether the weights should be
+renormalized to have a mean value of 1. This mean is computed over elements
+which contribute to the moments, so if \code{na_rm} is set, that means non-NA
+elements of \code{wts} that correspond to non-NA elements of the data
+vector.}
 
 \item{compute_se}{for \code{running_sharpe}, return an extra column of the
 standard error, as computed by Mertens' correction.}
@@ -89,6 +119,15 @@ same results as the 'standard' implementations,
 due to differences in roundoff. We make every attempt to balance
 speed and robustness. User assumes all risk from using
 the fromo package.
+
+Note that when weights are given, they are treated as replication weights.
+This can have subtle effects on computations which require minimum
+degrees of freedom, since the sum of weights will be compared to
+that minimum, not the number of data points. Weight values
+(much) less than 1 can cause computations to return \code{NA}
+somewhat unexpectedly due to this condition, while values greater
+than one might cause the computation to spuriously return a value
+with little precision.
 }
 \examples{
 
@@ -122,9 +161,6 @@ if (require(moments)) {
 }
 
 }
-\author{
-Steven E. Pav \email{shabbychef@gmail.com}
-}
 \references{
 Terriberry, T. "Computing Higher-Order Moments Online."
 \url{http://people.xiph.org/~tterribe/notes/homs.html}
@@ -142,6 +178,8 @@ standard deviation."
 \url{http://www.johndcook.com/blog/2008/09/26/comparing-three-methods-of-computing-standard-deviation}
 }
 \seealso{
-\code{\link{scale}}
+\code{\link{t_running_centered}}, \code{\link{scale}}
 }
-
+\author{
+Steven E. Pav \email{shabbychef@gmail.com}
+}
