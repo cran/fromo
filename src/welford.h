@@ -88,7 +88,9 @@ class Welford {
     public:
         inline Welford(const int &ord) : m_ord(ord), m_nel(0), m_subc(0), m_wsum(Kahan<W>(0)), m_xx(NumericVector(ord+1)) {
             if (!ord_beyond) {
-                if (ord < 2) { stop("must use ord >= 2"); }
+                if (ord < 2) { stop("must use ord >= 2"); } // #nocov
+            } else {
+                if (ord < 1) { stop("must use ord >= 1"); } // #nocov
             }
         }
         inline Welford(const int &ord, 
@@ -96,13 +98,17 @@ class Welford {
                        const W &sumwt, 
                        const NumericVector &xx) : m_ord(ord), m_nel(nel), m_subc(0), m_wsum(Kahan<W>(sumwt)), m_xx(NumericVector(xx)) {
             if (!ord_beyond) {
-                if (ord < 2) { stop("must use ord >= 2"); }
+                if (ord < 2) { stop("must use ord >= 2"); } // #nocov
+            } else {
+                if (ord < 1) { stop("must use ord >= 1"); } // #nocov
             }
         }
         inline Welford(const int &ord, 
                        const NumericVector &xx) : m_ord(ord), m_nel(int(xx[0])), m_subc(0), m_wsum(Kahan<W>(W(xx[0]))), m_xx(NumericVector(xx)) {
             if (!ord_beyond) {
-                if (ord < 2) { stop("must use ord >= 2"); }
+                if (ord < 2) { stop("must use ord >= 2"); } // #nocov
+            } else {
+                if (ord < 1) { stop("must use ord >= 1"); } // #nocov
             }
         }
     public:
@@ -116,7 +122,7 @@ class Welford {
             }
             return *this;
         }
-        FORCE_INLINE double var(const bool normalize,const double used_df) const {
+        inline double var(const bool normalize,const double used_df) const {
             double renorm;
             if (has_wts) {
                 if (normalize) {
@@ -132,7 +138,7 @@ class Welford {
         inline double mean() const {
             return m_xx[1];
         }
-        FORCE_INLINE double sd(const bool normalize,const double used_df) const {
+        inline double sd(const bool normalize,const double used_df) const {
             return sqrt(var(normalize,used_df));
         }
         // one centered moment, not standardized.
@@ -142,10 +148,10 @@ class Welford {
             if (ord==2) {
                 return sqrt(var(normalize,used_df));
             } else if (ord==1) {
-                Rcpp::warning("first centered moment is zero.");
+                // Rcpp::warning("first centered moment is zero."); // #nocov
                 return 0.0;
             } else {
-                if (ord > m_ord) { stop("cannot compute this high of a moment."); }
+                if (ord > m_ord) { stop("cannot compute this high of a moment."); } // #nocov
                 if (has_wts) {
                     return m_xx[ord] / double(m_wsum.as());
                 } else {
@@ -184,6 +190,18 @@ class Welford {
         inline int nel() const { if (has_wts) { return m_nel; } else { return int(wsum()); } }  // not sure I understand this...
         inline int subcount() const { return m_subc; }
 
+        // return true if any even order sums are negative
+        inline bool has_heywoord() const {
+            if (!ord_beyond) {
+                return (m_xx[2] < 0);
+            } else {
+                for (int ppp=2;ppp <= m_ord;ppp += 2) {
+                    if (m_xx[ppp] < 0) { return true; }
+                }
+                return false;
+            }
+            return false;
+        }
         inline W wsum() const { 
             if (has_wts) { return m_wsum.as(); }
             return W(m_nel);
@@ -243,7 +261,7 @@ class Welford {
                     m_xx[2] += xb_les_muA * (xval - m_xx[1]);
                 }
             } else {
-                if (wtA > 0) {
+                if ((wtA > 0) && (m_ord > 1)) {
                     div_left = -muD_les_muA;
                     term_left = pow(div_left,m_ord) * wtA;
                     if (has_wts) {
@@ -525,7 +543,7 @@ class Welford {
                 // rhs is empty; return lhs.
                 return *this; 
             }
-            if (n2 > ntot) { stop("cannot subtract more observations than were seen."); }
+            if (n2 > ntot) { stop("cannot subtract more observations than were seen."); } // #nocov
 
             mupart = rhs.m_xx[1] - m_xx[1];
 
@@ -585,8 +603,6 @@ class Welford {
 //UNFOLD
 
 // univariate sums, moments, cumulants//FOLDUP
-
-
 
 // quasiSumThing :
 // given weights and values, computes the
@@ -660,21 +676,22 @@ NumericVector quasiSumThing(T v,
     return vret;
 }
 
+// ord is largely ignred here;
 template <typename T,typename W,typename oneW,bool has_wts,bool ord_beyond,bool na_rm>
-Welford<oneW,has_wts,ord_beyond,na_rm> quasiWeightedThing(T v,
-                                                          W wts,
-                                                          int ord,
-                                                          int bottom,
-                                                          int top,
-                                                          const bool check_wts) {
+void add_many(Welford<oneW,has_wts,ord_beyond,na_rm> & frets,
+              T v,
+              W wts,
+              int ord,
+              int bottom,
+              int top,
+              const bool check_wts) {
     double nextval, nextwt;
-    Welford<oneW,has_wts,ord_beyond,na_rm> frets = Welford<oneW,has_wts,ord_beyond,na_rm>(ord);
 
     if (!has_wts) { nextwt = 1.0; }
     if ((top < 0) || (top > v.size())) { top = v.size(); }
     if (has_wts) {
-        if (check_wts && bad_weights<W>(wts)) { stop("negative weight detected"); }
-        if (wts.size() < top) { stop("size of wts does not match v"); }
+        if (check_wts && bad_weights<W>(wts)) { stop("negative weight detected"); } // #nocov
+        if (wts.size() < top) { stop("size of wts does not match v"); } // #nocov
     }
     for (int iii=bottom;iii < top;++iii) {
         nextval = v[iii];
@@ -683,6 +700,17 @@ Welford<oneW,has_wts,ord_beyond,na_rm> quasiWeightedThing(T v,
         }
         frets.add_one(nextval,nextwt);
     }
+}
+
+template <typename T,typename W,typename oneW,bool has_wts,bool ord_beyond,bool na_rm>
+Welford<oneW,has_wts,ord_beyond,na_rm> quasiWeightedThing(T v,
+                                                          W wts,
+                                                          int ord,
+                                                          int bottom,
+                                                          int top,
+                                                          const bool check_wts) {
+    Welford<oneW,has_wts,ord_beyond,na_rm> frets = Welford<oneW,has_wts,ord_beyond,na_rm>(ord);
+    add_many<T,W,oneW,has_wts,ord_beyond,na_rm>(frets,v,wts,ord,bottom,top,check_wts);
     return frets;
 }
 
@@ -708,8 +736,8 @@ NumericVector quasiWeightedMoments(T v,
                                    const bool check_wts,
                                    const bool normalize_wts) {
     double nextv, nextw, renorm, nok;
-    if (ord < 1) { stop("require positive order"); }
-    if (ord > MAX_ORD) { stop("too many moments requested, weirdo"); }
+    if (ord < 1) { stop("require positive order"); } // #nocov
+    if (ord > MAX_ORD) { stop("too many moments requested, weirdo"); } // #nocov
     NumericVector xret;
 
     if (ord == 1) {
@@ -764,34 +792,36 @@ NumericVector quasiWeightedMomentsCurryOne(T v,
                                            const bool na_rm, 
                                            const bool check_wts, 
                                            const bool normalize_wts) {
-    NumericVector dummy_wts;
     if (!Rf_isNull(wts)) {  
         switch (TYPEOF(wts)) {
             case  INTSXP: { return quasiWeightedMomentsCurryZero<T,IntegerVector,int,true>(v, wts, ord, 0, -1, na_rm, check_wts, normalize_wts); }
             case REALSXP: { return quasiWeightedMomentsCurryZero<T,NumericVector,double,true>(v, wts, ord, 0, -1, na_rm, check_wts, normalize_wts); }
             case  LGLSXP: { return quasiWeightedMomentsCurryZero<T,IntegerVector,int,true>(v, as<IntegerVector>(wts), ord, 0, -1, na_rm, check_wts, normalize_wts); } // bools can be upcast to save build size.
-            default: stop("Unsupported weight type"); // nocov
+            default: stop("Unsupported weight type"); // #nocov
         }
     }
+    NumericVector dummy_wts;
     // have to have fallthrough for CRAN check.
     return quasiWeightedMomentsCurryZero<T,NumericVector,int,false>(v, dummy_wts, ord, 0, -1, na_rm, check_wts, normalize_wts); 
 }
 
 // wrap one level
 NumericVector inline quasiWeightedMomentsCurryTwo(SEXP v, 
-                                           SEXP wts, 
-                                           int ord, 
-                                           const bool na_rm, 
-                                           const bool check_wts, 
-                                           const bool normalize_wts) {
-    switch (TYPEOF(v)) {
-        case  INTSXP: { return quasiWeightedMomentsCurryOne<IntegerVector>(v, wts, ord, na_rm, check_wts, normalize_wts); }
-        case REALSXP: { return quasiWeightedMomentsCurryOne<NumericVector>(v, wts, ord, na_rm, check_wts, normalize_wts); }
-        case  LGLSXP: { return quasiWeightedMomentsCurryOne<IntegerVector>(as<IntegerVector>(v), wts, ord, na_rm, check_wts, normalize_wts); }  // bools can be upcast to save build size.
-        default: stop("Unsupported weight type"); // nocov
+                                                  SEXP wts, 
+                                                  int ord, 
+                                                  const bool na_rm, 
+                                                  const bool check_wts, 
+                                                  const bool normalize_wts) {
+    if (!Rf_isNull(v)) {  
+        switch (TYPEOF(v)) {
+            case  INTSXP: { return quasiWeightedMomentsCurryOne<IntegerVector>(v, wts, ord, na_rm, check_wts, normalize_wts); }
+            case REALSXP: { return quasiWeightedMomentsCurryOne<NumericVector>(v, wts, ord, na_rm, check_wts, normalize_wts); }
+            case  LGLSXP: { return quasiWeightedMomentsCurryOne<IntegerVector>(as<IntegerVector>(v), wts, ord, na_rm, check_wts, normalize_wts); }  // bools can be upcast to save build size.
+            default: stop("Unsupported data type"); // #nocov
+        }
     }
     // have to have fallthrough for CRAN check.
-    NumericVector retv;
+    NumericVector retv(ord+1);
     return retv;
 }
 

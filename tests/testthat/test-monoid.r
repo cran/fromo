@@ -39,30 +39,128 @@ test_that("join/unjoin",{#FOLDUP
 
 	x1 <- rnorm(1e3,mean=1)
 	x2 <- rnorm(1e3,mean=1)
-	max_ord <- 6L
-	expect_error(rs1 <- cent_sums(x1,max_ord),NA)
-	expect_error(rs2 <- cent_sums(x2,max_ord),NA)
-	expect_error(rs3 <- cent_sums(c(x1,x2),max_ord),NA)
-	# make sure these don't change? 
-	copy_rs1 <- rs1 + 0
-	copy_rs2 <- rs2 + 0
-	rs3alt <- join_cent_sums(rs1,rs2)
-	expect_equal(rs1,copy_rs1,tolerance=1e-7)
-	expect_equal(rs2,copy_rs2,tolerance=1e-7)
-	expect_equal(rs3,rs3alt,tolerance=1e-7)
+	for (max_ord in c(1L,2L,3L,6L)) {
+		for (narm in c(FALSE,TRUE)) { 
+			expect_error(rs1 <- cent_sums(x1,max_ord,na_rm=narm),NA)
+			expect_equal(length(rs1),max_ord+1)
+			expect_error(rs2 <- cent_sums(x2,max_ord,na_rm=narm),NA)
+			expect_equal(length(rs2),max_ord+1)
+			expect_error(rs3 <- cent_sums(c(x1,x2),max_ord,na_rm=narm),NA)
+			# make sure these don't change? 
+			copy_rs1 <- rs1 + 0
+			copy_rs2 <- rs2 + 0
+			expect_error(rs3alt <- join_cent_sums(rs1,rs2),NA)
+			expect_equal(rs1,copy_rs1,tolerance=1e-7)
+			expect_equal(rs2,copy_rs2,tolerance=1e-7)
+			expect_equal(rs3,rs3alt,tolerance=1e-7)
 
-	copy_rs1 <- rs1 + 0
-	copy_rs2 <- rs2 + 0
-	copy_rs3 <- rs3 + 0
+			copy_rs1 <- rs1 + 0
+			copy_rs2 <- rs2 + 0
+			copy_rs3 <- rs3 + 0
 
-	rs1alt <- unjoin_cent_sums(rs3,rs2)
-	rs2alt <- unjoin_cent_sums(rs3,rs1)
-	expect_equal(rs1,copy_rs1,tolerance=1e-7)
-	expect_equal(rs2,copy_rs2,tolerance=1e-7)
-	expect_equal(rs3,copy_rs3,tolerance=1e-7)
+			expect_error(rs1alt <- unjoin_cent_sums(rs3,rs2),NA)
+			expect_error(rs2alt <- unjoin_cent_sums(rs3,rs1),NA)
+			expect_equal(rs1,copy_rs1,tolerance=1e-7)
+			expect_equal(rs2,copy_rs2,tolerance=1e-7)
+			expect_equal(rs3,copy_rs3,tolerance=1e-7)
 
-	expect_equal(rs1,rs1alt,tolerance=1e-7)
-	expect_equal(rs2,rs2alt,tolerance=1e-7)
+			expect_equal(rs1,rs1alt,tolerance=1e-7)
+			expect_equal(rs2,rs2alt,tolerance=1e-7)
+
+			# now an empty guy; this should return empty.
+			x0 <- c()
+			expect_error(rs0 <- cent_sums(x0,max_ord,na_rm=narm),NA)
+			expect_equal(length(rs0),max_ord+1)
+			expect_error(rs1 <- cent_sums(x1,max_ord,na_rm=narm),NA)
+			copy_rs1 <- rs1 + 0
+			expect_error(rs1alt <- join_cent_sums(rs1,rs0),NA)
+			expect_equal(rs1,rs1alt,tolerance=1e-7)
+		}
+	}
+})#UNFOLD
+test_that("weighted join/unjoin",{#FOLDUP
+	set.char.seed("1100eb6f-4108-414b-94d8-e31524e93461")
+
+	x1 <- rnorm(1e3,mean=1)
+	w1 <- runif(length(x1),min=0.5,max=1.5)
+	x2 <- rnorm(1e3,mean=1)
+	w2 <- runif(length(x2),min=0.5,max=1.5)
+	for (max_ord in c(1L,2L,3L,6L)) {
+		expect_error(rs1 <- cent_sums(x1,max_ord,wts=w1,normalize_wts=FALSE),NA)
+		expect_equal(length(rs1),max_ord+1)
+		expect_error(rs2 <- cent_sums(x2,max_ord,wts=w2,normalize_wts=FALSE),NA)
+		expect_equal(length(rs2),max_ord+1)
+		expect_error(rs3 <- cent_sums(c(x1,x2),max_ord,wts=c(w1,w2),normalize_wts=FALSE),NA)
+		# make sure these don't change? 
+		copy_rs1 <- rs1 + 0
+		copy_rs2 <- rs2 + 0
+		expect_error(rs3alt <- join_cent_sums(rs1,rs2),NA)
+		expect_equal(rs1,copy_rs1,tolerance=1e-7)
+		expect_equal(rs2,copy_rs2,tolerance=1e-7)
+		expect_equal(rs3,rs3alt,tolerance=1e-7)
+
+		copy_rs1 <- rs1 + 0
+		copy_rs2 <- rs2 + 0
+		copy_rs3 <- rs3 + 0
+
+		expect_error(rs1alt <- unjoin_cent_sums(rs3,rs2),NA)
+		expect_error(rs2alt <- unjoin_cent_sums(rs3,rs1),NA)
+		expect_equal(rs1,copy_rs1,tolerance=1e-7)
+		expect_equal(rs2,copy_rs2,tolerance=1e-7)
+		expect_equal(rs3,copy_rs3,tolerance=1e-7)
+
+		expect_equal(rs1,rs1alt,tolerance=1e-7)
+		expect_equal(rs2,rs2alt,tolerance=1e-7)
+
+		# now an empty guy; this should return empty.
+		x0 <- c()
+		expect_error(rs0 <- cent_sums(x0,max_ord,wts=c()),NA)
+		expect_equal(length(rs0),max_ord+1)
+		expect_error(rs1 <- cent_sums(x1,max_ord,wts=w1,normalize_wts=FALSE),NA)
+		copy_rs1 <- rs1 + 0
+		expect_error(rs1alt <- join_cent_sums(rs1,rs0),NA)
+		expect_equal(rs1,rs1alt,tolerance=1e-7)
+	}
+	# just hit code to make sure it runs
+	for (max_ord in c(1L,2L,3L,6L)) {
+		for (narm in c(FALSE,TRUE)) {
+			for (cw in c(FALSE,TRUE)) {
+				for (nw in c(FALSE,TRUE)) {
+					expect_error(rs1 <- cent_sums(x1,max_ord,wts=w1,na_rm=narm,
+																				check_wts=cw,normalize_wts=nw),NA)
+					expect_equal(length(rs1),max_ord+1)
+				}
+			}
+		}
+	}
+
+})#UNFOLD
+test_that("join commutativity",{#FOLDUP
+	set.char.seed("f33946b3-216e-4977-9535-447b55214197")
+
+	for (max_ord in c(1L,2L,3L,6L)) {
+		x1 <- rnorm(1e3,mean=1)
+		x2 <- rnorm(1e3,mean=1)
+		expect_error(rs1 <- cent_sums(x1,max_ord),NA)
+		expect_error(rs2 <- cent_sums(x2,max_ord),NA)
+		expect_error(rs3_a <- join_cent_sums(rs1,rs2),NA)
+		expect_error(rs3_b <- join_cent_sums(rs2,rs1),NA)
+		expect_equal(rs3_a,rs3_b,tolerance=1e-7)
+
+		# on an empty
+		x1 <- c()
+		x2 <- rnorm(1e3,mean=1)
+		expect_error(rs1 <- cent_sums(x1,max_ord),NA)
+		expect_error(rs2 <- cent_sums(x2,max_ord),NA)
+		expect_error(rs3_a <- join_cent_sums(rs1,rs2),NA)
+		expect_error(rs3_b <- join_cent_sums(rs2,rs1),NA)
+		expect_equal(rs3_a,rs3_b,tolerance=1e-7)
+	}
+
+	# should this be an error?
+	#rs1[1] <- -1
+	#expect_error(rs3_a <- join_cent_sums(rs1,rs2))
+	#expect_error(rs3_b <- join_cent_sums(rs2,rs1))
 })#UNFOLD
 context("monoid cosum")
 test_that("cosums are sane",{#FOLDUP
@@ -76,6 +174,18 @@ test_that("cosums are sane",{#FOLDUP
 	expect_equal(rs1[1 + (1:ncol(x1)),1],colMeans(x1),tolerance=1e-7)
 	expect_equal(rs1[1 + (1:ncol(x1)),1 + (1:ncol(x1))],cov(x1),tolerance=1e-7)
 })#UNFOLD
+test_that("cosums and na_omit ",{#FOLDUP
+	set.char.seed("9b87264c-e543-44ed-b4df-7e70cfbaf59c")
+
+	x1 <- matrix(rnorm(1e2*5,mean=1),ncol=5)
+	x1[1,1] <- NA
+	x2 <- x1[2:nrow(x1),,drop=FALSE]
+
+	max_ord <- 2L
+	expect_error(rs1 <- cent_comoments(x1,max_ord,used_df=1L,na_omit=TRUE),NA)
+	expect_error(rs2 <- cent_comoments(x2,max_ord,used_df=1L,na_omit=TRUE),NA)
+	expect_equal(rs1,rs2)
+})#UNFOLD
 context("monoid join/unjoin cosums")
 test_that("join/unjoin cosums",{#FOLDUP
 	set.char.seed("9ecdda29-aaae-4f88-9fe7-4418846ca54c")
@@ -86,13 +196,27 @@ test_that("join/unjoin cosums",{#FOLDUP
 	expect_error(rs1 <- cent_cosums(x1,max_ord),NA)
 	expect_error(rs2 <- cent_cosums(x2,max_ord),NA)
 	expect_error(rs3 <- cent_cosums(rbind(x1,x2),max_ord),NA)
-	rs3alt <- join_cent_cosums(rs1,rs2)
-	expect_lt(max(abs(rs3 - rs3alt)),1e-7)
+	expect_error(rs3alt <- join_cent_cosums(rs1,rs2),NA)
+	expect_equal(rs3,rs3alt,tolerance=1e-7)
 
 	expect_error(rs1alt <- unjoin_cent_cosums(rs3,rs2),NA)
 	expect_error(rs2alt <- unjoin_cent_cosums(rs3,rs1),NA)
-	expect_lt(max(abs(rs1 - rs1alt)),1e-7)
-	expect_lt(max(abs(rs2 - rs2alt)),1e-7)
+	expect_equal(rs1,rs1alt,tolerance=1e-7)
+	expect_equal(rs2,rs2alt,tolerance=1e-7)
+})#UNFOLD
+test_that("commutativity of join cosums",{#FOLDUP
+	max_ord <- 2L
+
+	set.char.seed("eb9064dc-9463-4a2a-b824-ec33defed3b6")
+	x1 <- matrix(rnorm(1e3*5,mean=1),ncol=5)
+	x2 <- matrix(rnorm(1e3*5,mean=1),ncol=5)
+	expect_error(rs1 <- cent_cosums(x1,max_ord),NA)
+	expect_error(rs2 <- cent_cosums(x2,max_ord),NA)
+
+	expect_error(rs3_a <- join_cent_cosums(rs1,rs2),NA)
+	expect_error(rs3_b <- join_cent_cosums(rs2,rs1),NA)
+	expect_equal(rs3_a,rs3_b,tolerance=1e-7)
+
 })#UNFOLD
 
 # 2FIX: check the effects of NA

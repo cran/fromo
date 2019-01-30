@@ -55,7 +55,14 @@ NumericMatrix runQM(T v,
                     const bool check_wts,
                     const bool normalize_wts) {
 
+    // a bit of a hack here, but you must have ord >= 2 for Welford
+    // objects, otherwise it hits a memory leak. I know that previously
+    // I had hard coded Welford-like objects for the ord=1 case,
+    // but that makes huge libraries. instead, just hack this MAX in here
+    //const int fake_ord = MAX(ord,2);
+
     Welford<oneW,has_wts,ord_beyond,na_rm> frets = Welford<oneW,has_wts,ord_beyond,na_rm>(ord);
+    frets.tare();
 
     const int numel = v.size();
 
@@ -89,7 +96,7 @@ NumericMatrix runQM(T v,
         (((retwhat==ret_sharpese) || 
           (retwhat==ret_exkurt) ||
           (retwhat==ret_exkurt5)) && (ord < 4))) { 
-        stop("bad code: order too small to support this computation"); 
+        stop("bad code: order too small to support this computation");  // #nocov
     }
     int iii,jjj,lll,tr_iii,tr_jjj;
     bool aligned = (lookahead == 0);
@@ -138,11 +145,14 @@ NumericMatrix runQM(T v,
         for (lll=0;lll < firstpart;++lll) {
             // check subcount first and just recompute if needed.
             if (frets.subcount() >= recom_period) {
-                // fix this
-                frets = quasiWeightedThing<T,W,oneW,has_wts,ord_beyond,na_rm>(v,wts,ord,
-                                                                              0,         //bottom
-                                                                              lll+1,     //top
-                                                                              false);    //no need to check weights as we have done it once above.
+                //zero it out
+                frets.tare();
+                add_many<T,W,oneW,has_wts,ord_beyond,na_rm>(frets,
+                                                            v,wts,ord,   
+                                                            0,      //bottom
+                                                            lll+1,  //top
+                                                            false); //no need to check weights as we have done it once above.
+
             } else {
                 // add on nextv:
                 nextv = double(v[lll]);
@@ -152,7 +162,6 @@ NumericMatrix runQM(T v,
 
             // fill in the value in the output.
             // 2FIX: give access to v, not v[lll]...
-            // moment_converter<retwhat, Welford<oneW,has_wts,ord_beyond,na_rm> ,T,renormalize>::mom_interp(xret,lll,ord,frets,v,used_df,min_df);
 //yuck!!
 #include "moment_interp.h"
         }//UNFOLD
@@ -164,10 +173,13 @@ NumericMatrix runQM(T v,
                 if (frets.subcount() >= recom_period) {
                     // fix this
                     jjj = tr_jjj+1;
-                    frets = quasiWeightedThing<T,W,oneW,has_wts,ord_beyond,na_rm>(v,wts,ord,
-                                                                                  jjj,       //bottom
-                                                                                  lll+1,     //top
-                                                                                  false);    //no need to check weights as we have done it once above.
+                    //zero it out
+                    frets.tare();
+                    add_many<T,W,oneW,has_wts,ord_beyond,na_rm>(frets,
+                                                                v,wts,ord,   
+                                                                jjj,    //bottom
+                                                                lll+1,  //top
+                                                                false); //no need to check weights as we have done it once above.
                 } else {
                     // add on nextv:
                     nextv = double(v[lll]);
@@ -183,7 +195,6 @@ NumericMatrix runQM(T v,
 
                 // fill in the value in the output.
                 // 2FIX: give access to v, not v[lll]...
-                // moment_converter<retwhat, Welford<oneW,has_wts,ord_beyond,na_rm> ,T,renormalize>::mom_interp(xret,lll,ord,frets,v,used_df,min_df);
     //yuck!!
 #include "moment_interp.h"
             }//UNFOLD
@@ -205,34 +216,46 @@ NumericMatrix runQM(T v,
             
             // check subcount first and just recompute if needed.
             if ((lll==0) || (frets.subcount() >= recom_period)) {
+                tr_jjj++;
+
                 // fix this
                 iii = MIN(numel-1,tr_iii);
-                jjj = MAX(0,tr_jjj+1);
+                jjj = MAX(0,tr_jjj);
                 if (jjj <= iii) {
-                    frets = quasiWeightedThing<T,W,oneW,has_wts,ord_beyond,na_rm>(v,wts,ord,
-                                                                                  jjj,       //bottom
-                                                                                  iii+1,     //top
-                                                                                  false);    //no need to check weights as we have done it once above.
+                    //zero it out
+                    frets.tare();
+                    add_many<T,W,oneW,has_wts,ord_beyond,na_rm>(frets,
+                                                                v,wts,ord,   
+                                                                jjj,    //bottom
+                                                                iii+1,  //top
+                                                                false); //no need to check weights as we have done it once above.
                 }
             } else {
                 if ((tr_iii < numel) && (tr_iii >= 0)) {
                     // add on nextv:
                     nextv = double(v[tr_iii]);
                     if (has_wts) { nextw = double(wts[tr_iii]); } 
-                    frets.add_one(nextv,nextw); 
-                }
-                // remove prevv:
-                if ((tr_jjj < numel) && (tr_jjj >= 0)) {
+
+                    // maybe swap one off;
+                    if ((tr_jjj < numel) && (tr_jjj >= 0)) {
+                        prevv = double(v[tr_jjj]);
+                        if (has_wts) { prevw = double(wts[tr_jjj]); }
+                        frets.swap_one(nextv,nextw,prevv,prevw); 
+                    } else {
+                        // nope, just add this one guy
+                        frets.add_one(nextv,nextw); 
+                    }
+                } else if ((tr_jjj < numel) && (tr_jjj >= 0)) {
+                    // remove prevv:
                     prevv = double(v[tr_jjj]);
                     if (has_wts) { prevw = double(wts[tr_jjj]); }
                     frets.rem_one(prevv,prevw); 
                 }
+                tr_jjj++;
             }
-            tr_jjj++;
 
             // fill in the value in the output.
             // 2FIX: give access to v, not v[lll]...
-            // moment_converter<retwhat, Welford<oneW,has_wts,ord_beyond,na_rm> ,T,renormalize>::mom_interp(xret,lll,ord,frets,v,used_df,min_df);
 //yuck!!
 #include "moment_interp.h"
         }//UNFOLD
@@ -301,6 +324,7 @@ NumericMatrix runQMCurryTwo(T v,
                             const bool check_wts,
                             const bool normalize_wts) {
 
+    // ugh, ord < 2 does not go through here, and then it is all awful.
     if (ord==2) {
         return runQMCurryOne<T,retwhat,false>(v, wts, ord, window, recom_period, lookahead, min_df, used_df, na_rm, check_wts, normalize_wts); 
     }
@@ -323,7 +347,7 @@ NumericMatrix runQMCurryThree(SEXP v,
         case  INTSXP: { return runQMCurryTwo<IntegerVector,retwhat>(v, wts, ord, window, recom_period, lookahead, min_df, used_df, na_rm, check_wts, normalize_wts); } 
         case REALSXP: { return runQMCurryTwo<NumericVector,retwhat>(v, wts, ord, window, recom_period, lookahead, min_df, used_df, na_rm, check_wts, normalize_wts); } 
         case  LGLSXP: { return runQMCurryTwo<IntegerVector,retwhat>(as<IntegerVector>(v), wts, ord, window, recom_period, lookahead, min_df, used_df, na_rm, check_wts, normalize_wts); }  // bools can be upcast to save build size.
-        default: stop("Unsupported weight type"); // nocov
+        default: stop("Unsupported weight type"); // #nocov
     }
     // have to have fallthrough for CRAN check.
     NumericMatrix retv;

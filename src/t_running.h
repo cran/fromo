@@ -77,15 +77,22 @@ NumericMatrix t_runQM(T v,
                       const bool wts_as_delta,
                       const bool normalize_wts) {
 
+    // a bit of a hack here, but you must have ord >= 2 for Welford
+    // objects, otherwise it hits a memory leak. I know that previously
+    // I had hard coded Welford-like objects for the ord=1 case,
+    // but that makes huge libraries. instead, just hack this MAX in here
+    //int fake_ord = MAX(ord,2);
+
     Welford<oneW,has_wts,ord_beyond,na_rm> frets = Welford<oneW,has_wts,ord_beyond,na_rm>(ord);
+    frets.tare();
 
     NumericVector time, time_deltas, lb_time;
     if (opt_time.isNotNull()) {
         time = opt_time.get();
         if (opt_time_deltas.isNotNull()) {
-            Rcpp::warning("time deltas given, but not needed; ignoring.");
+            Rcpp::warning("time deltas given, but not needed; ignoring."); // #nocov
         }
-        if (has_decrease<NumericVector>(time)) { stop("decreasing time detected"); }
+        if (has_decrease<NumericVector>(time)) { stop("decreasing time detected"); } // #nocov
     } else {
         if (opt_time_deltas.isNotNull()) {
             time_deltas = opt_time_deltas.get();
@@ -94,10 +101,10 @@ NumericMatrix t_runQM(T v,
                 if (has_wts) {
                     time_deltas = wts;
                 } else {
-                    stop("cannot infer times, as time, time_deltas and weights not given."); // nocov
+                    stop("cannot infer times, as time, time_deltas and weights not given."); // #nocov
                 }
             } else {
-                stop("cannot infer times, as time and time_deltas not given, and wts_as_delta is FALSE."); // nocov
+                stop("cannot infer times, as time and time_deltas not given, and wts_as_delta is FALSE."); // #nocov
             }
         }
         // to be sure, check again; this might be redundant in the case where deltas are weights, but whatever.
@@ -116,7 +123,7 @@ NumericMatrix t_runQM(T v,
 
     const int numel = v.size();
     if (time.size() != numel) {
-        stop("size of time does not match v"); // nocov
+        stop("size of time does not match v"); // #nocov
     }
     const int numlb = lb_time.size();
 
@@ -132,8 +139,8 @@ NumericMatrix t_runQM(T v,
     // 2FIX: later you should use the infwin to prevent some computations
     // from happening. like subtracting old observations, say.
     const bool infwin = NumericVector::is_na(window);
-    if ((window <= 0) && (!infwin)) { stop("must give positive window"); }
-    if (variable_win && !infwin) { Rcpp::warning("variable_win specified, but not being used as a non-na window is given."); }
+    if ((window <= 0) && (!infwin)) { stop("must give positive window"); } // #nocov
+    if (variable_win && !infwin) { Rcpp::warning("variable_win specified, but not being used as a non-na window is given."); } // #nocov
 
     // whether to use the gap between lb_time as the effective window
     const bool gapwin = variable_win && infwin;
@@ -154,7 +161,7 @@ NumericMatrix t_runQM(T v,
         (((retwhat==ret_sharpese) || 
           (retwhat==ret_exkurt) ||
           (retwhat==ret_exkurt5)) && (ord < 4))) { 
-        stop("bad code: order too small to support this computation"); 
+        stop("bad code: order too small to support this computation");  // #nocov
     }
     int iii,jjj,lll,tr_iii,tr_jjj;
     // these define the time window for any lll; 
@@ -231,11 +238,13 @@ NumericMatrix t_runQM(T v,
             if (!infwin) { while ((tr_jjj < numel) && (time[tr_jjj] <= t0)) { tr_jjj++; } }
             tr_iii = tr_jjj;
             while ((tr_iii < numel) && (time[tr_iii] <= tf)) { tr_iii++; }
-
-            frets = quasiWeightedThing<T,W,oneW,has_wts,ord_beyond,na_rm>(v,wts,ord,
-                                                                          tr_jjj,       //bottom
-                                                                          tr_iii,       //top
-                                                                          false);    //no need to check weights as we have done it once above.
+            //zero it out
+            frets.tare();
+            add_many<T,W,oneW,has_wts,ord_beyond,na_rm>(frets,
+                                                        v,wts,ord,   
+                                                        tr_jjj,  //bottom
+                                                        tr_iii,  //top
+                                                        false);  //no need to check weights as we have done it once above.
         } else {
             if (!infwin) {
                 while ((tr_iii < numel) && (time[tr_iii] <= tf) && (time[tr_jjj] <= t0)) { 
@@ -267,16 +276,18 @@ NumericMatrix t_runQM(T v,
             }
             // may need to recompute based on the number of subtractions. bummer.
             if (frets.subcount() >= recom_period) {
-                frets = quasiWeightedThing<T,W,oneW,has_wts,ord_beyond,na_rm>(v,wts,ord,
-                                                                              tr_jjj,       //bottom
-                                                                              tr_iii,       //top
-                                                                              false);    //no need to check weights as we have done it once above.
+                //zero it out
+                frets.tare();
+                add_many<T,W,oneW,has_wts,ord_beyond,na_rm>(frets,
+                                                            v,wts,ord,   
+                                                            tr_jjj,  //bottom
+                                                            tr_iii,  //top
+                                                            false);  //no need to check weights as we have done it once above.
             }
         }
 
         // fill in the value in the output.
         // 2FIX: give access to v, not v[lll]...
-        // moment_converter<retwhat, Welford<oneW,has_wts,ord_beyond,na_rm> ,T,renormalize>::mom_interp(xret,lll,ord,frets,v,used_df,min_df);
 //yuck!!
 #include "moment_interp.h"
 
@@ -424,7 +435,7 @@ NumericMatrix t_runQMCurryThree(SEXP v,
                                                                       time, time_deltas, lb_time,
                                                                       ord, window, recom_period, lookahead, min_df, used_df, na_rm, check_wts, 
                                                                       variable_win, wts_as_delta, normalize_wts); }
-        default: stop("Unsupported weight type"); // nocov
+        default: stop("Unsupported weight type"); // #nocov
     }
     // have to have fallthrough for CRAN check.
     NumericMatrix retv;

@@ -5,8 +5,8 @@ Authors@R: c(person(c("Steven", "E."), "Pav",
     role=c("aut","cre"),
     email="shabbychef@gmail.com",
     comment = c(ORCID = "0000-0002-4197-6195")))
-Version: 0.2.0
-Date: 2019-01-12
+Version: 0.2.1
+Date: 2019-01-29
 License: LGPL-3
 Title: Fast Robust Moments
 BugReports: https://github.com/shabbychef/fromo/issues
@@ -19,12 +19,12 @@ Description: Fast, numerically robust computation of weighted moments via 'Rcpp'
 Imports: Rcpp (>= 0.12.3), methods
 LinkingTo: Rcpp
 Suggests: knitr, testthat, moments, PDQutils, e1071, microbenchmark
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
 URL: https://github.com/shabbychef/fromo
 VignetteBuilder: knitr
 Collate: 'fromo.r' 'RcppExports.R' 'zzz_centsums.R'
 NeedsCompilation: yes
-Packaged: 2019-01-13 00:24:22 UTC; spav
+Packaged: 2019-01-30 06:37:08 UTC; root
 Author: Steven E. Pav [aut, cre] (<https://orcid.org/0000-0002-4197-6195>)
 Repository: CRAN
-Date/Publication: 2019-01-13 16:40:03 UTC
+Date/Publication: 2019-01-30 07:10:03 UTC
