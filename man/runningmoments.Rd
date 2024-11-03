@@ -12,41 +12,117 @@
 \alias{running_cumulants}
 \title{Compute first K moments over a sliding window}
 \usage{
-running_sd3(v, window = NULL, wts = NULL, na_rm = FALSE, min_df = 0L,
-  used_df = 1, restart_period = 100L, check_wts = FALSE,
-  normalize_wts = TRUE)
+running_sd3(
+  v,
+  window = NULL,
+  wts = NULL,
+  na_rm = FALSE,
+  min_df = 0L,
+  used_df = 1,
+  restart_period = 100L,
+  check_wts = FALSE,
+  normalize_wts = TRUE
+)
 
-running_skew4(v, window = NULL, wts = NULL, na_rm = FALSE, min_df = 0L,
-  used_df = 1, restart_period = 100L, check_wts = FALSE,
-  normalize_wts = TRUE)
+running_skew4(
+  v,
+  window = NULL,
+  wts = NULL,
+  na_rm = FALSE,
+  min_df = 0L,
+  used_df = 1,
+  restart_period = 100L,
+  check_wts = FALSE,
+  normalize_wts = TRUE
+)
 
-running_kurt5(v, window = NULL, wts = NULL, na_rm = FALSE, min_df = 0L,
-  used_df = 1, restart_period = 100L, check_wts = FALSE,
-  normalize_wts = TRUE)
+running_kurt5(
+  v,
+  window = NULL,
+  wts = NULL,
+  na_rm = FALSE,
+  min_df = 0L,
+  used_df = 1,
+  restart_period = 100L,
+  check_wts = FALSE,
+  normalize_wts = TRUE
+)
 
-running_sd(v, window = NULL, wts = NULL, na_rm = FALSE, min_df = 0L,
-  used_df = 1, restart_period = 100L, check_wts = FALSE,
-  normalize_wts = TRUE)
+running_sd(
+  v,
+  window = NULL,
+  wts = NULL,
+  na_rm = FALSE,
+  min_df = 0L,
+  used_df = 1,
+  restart_period = 100L,
+  check_wts = FALSE,
+  normalize_wts = TRUE
+)
 
-running_skew(v, window = NULL, wts = NULL, na_rm = FALSE, min_df = 0L,
-  used_df = 1, restart_period = 100L, check_wts = FALSE,
-  normalize_wts = TRUE)
+running_skew(
+  v,
+  window = NULL,
+  wts = NULL,
+  na_rm = FALSE,
+  min_df = 0L,
+  used_df = 1,
+  restart_period = 100L,
+  check_wts = FALSE,
+  normalize_wts = TRUE
+)
 
-running_kurt(v, window = NULL, wts = NULL, na_rm = FALSE, min_df = 0L,
-  used_df = 1, restart_period = 100L, check_wts = FALSE,
-  normalize_wts = TRUE)
+running_kurt(
+  v,
+  window = NULL,
+  wts = NULL,
+  na_rm = FALSE,
+  min_df = 0L,
+  used_df = 1,
+  restart_period = 100L,
+  check_wts = FALSE,
+  normalize_wts = TRUE
+)
 
-running_cent_moments(v, window = NULL, wts = NULL, max_order = 5L,
-  na_rm = FALSE, max_order_only = FALSE, min_df = 0L, used_df = 0,
-  restart_period = 100L, check_wts = FALSE, normalize_wts = TRUE)
+running_cent_moments(
+  v,
+  window = NULL,
+  wts = NULL,
+  max_order = 5L,
+  na_rm = FALSE,
+  max_order_only = FALSE,
+  min_df = 0L,
+  used_df = 0,
+  restart_period = 100L,
+  check_wts = FALSE,
+  normalize_wts = TRUE
+)
 
-running_std_moments(v, window = NULL, wts = NULL, max_order = 5L,
-  na_rm = FALSE, min_df = 0L, used_df = 0, restart_period = 100L,
-  check_wts = FALSE, normalize_wts = TRUE)
+running_std_moments(
+  v,
+  window = NULL,
+  wts = NULL,
+  max_order = 5L,
+  na_rm = FALSE,
+  min_df = 0L,
+  used_df = 0,
+  restart_period = 100L,
+  check_wts = FALSE,
+  normalize_wts = TRUE
+)
 
-running_cumulants(v, window = NULL, wts = NULL, max_order = 5L,
-  na_rm = FALSE, min_df = 0L, used_df = 0, restart_period = 100L,
-  check_wts = FALSE, normalize_wts = TRUE)
+running_cumulants(
+  v,
+  window = NULL,
+  wts = NULL,
+  max_order = 5L,
+  na_rm = FALSE,
+  min_df = 0L,
+  used_df = 0,
+  restart_period = 100L,
+  check_wts = FALSE,
+  normalize_wts = TRUE
+)
 }
 \arguments{
 \item{v}{a vector}
@@ -176,19 +252,19 @@ xc6 <- running_cent_moments(x,window=100L,max_order=6L)
 }
 \references{
 Terriberry, T. "Computing Higher-Order Moments Online."
-\url{http://people.xiph.org/~tterribe/notes/homs.html}
+\url{https://web.archive.org/web/20140423031833/http://people.xiph.org/~tterribe/notes/homs.html}
 
 J. Bennett, et. al., "Numerically Stable, Single-Pass, 
 Parallel Statistics Algorithms," Proceedings of IEEE
 International Conference on Cluster Computing, 2009.
-\url{https://www.semanticscholar.org/paper/Numerically-stable-single-pass-parallel-statistics-Bennett-Grout/a83ed72a5ba86622d5eb6395299b46d51c901265}
+\doi{10.1109/CLUSTR.2009.5289161}
 
 Cook, J. D. "Accurately computing running variance."
-\url{http://www.johndcook.com/standard_deviation.html}
+\url{https://www.johndcook.com/standard_deviation/}
 
 Cook, J. D. "Comparing three methods of computing 
 standard deviation."
-\url{http://www.johndcook.com/blog/2008/09/26/comparing-three-methods-of-computing-standard-deviation}
+\url{https://www.johndcook.com/blog/2008/09/26/comparing-three-methods-of-computing-standard-deviation/}
 }
 \author{
 Steven E. Pav \email{shabbychef@gmail.com}

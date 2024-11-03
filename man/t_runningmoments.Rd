@@ -12,51 +12,162 @@
 \alias{t_running_cumulants}
 \title{Compute first K moments over a sliding time-based window}
 \usage{
-t_running_sd3(v, time = NULL, time_deltas = NULL, window = NULL,
-  wts = NULL, lb_time = NULL, na_rm = FALSE, min_df = 0L, used_df = 1,
-  restart_period = 100L, variable_win = FALSE, wts_as_delta = TRUE,
-  check_wts = FALSE, normalize_wts = TRUE)
+t_running_sd3(
+  v,
+  time = NULL,
+  time_deltas = NULL,
+  window = NULL,
+  wts = NULL,
+  lb_time = NULL,
+  na_rm = FALSE,
+  min_df = 0L,
+  used_df = 1,
+  restart_period = 100L,
+  variable_win = FALSE,
+  wts_as_delta = TRUE,
+  check_wts = FALSE,
+  normalize_wts = TRUE
+)
 
-t_running_skew4(v, time = NULL, time_deltas = NULL, window = NULL,
-  wts = NULL, lb_time = NULL, na_rm = FALSE, min_df = 0L, used_df = 1,
-  restart_period = 100L, variable_win = FALSE, wts_as_delta = TRUE,
-  check_wts = FALSE, normalize_wts = TRUE)
+t_running_skew4(
+  v,
+  time = NULL,
+  time_deltas = NULL,
+  window = NULL,
+  wts = NULL,
+  lb_time = NULL,
+  na_rm = FALSE,
+  min_df = 0L,
+  used_df = 1,
+  restart_period = 100L,
+  variable_win = FALSE,
+  wts_as_delta = TRUE,
+  check_wts = FALSE,
+  normalize_wts = TRUE
+)
 
-t_running_kurt5(v, time = NULL, time_deltas = NULL, window = NULL,
-  wts = NULL, lb_time = NULL, na_rm = FALSE, min_df = 0L, used_df = 1,
-  restart_period = 100L, variable_win = FALSE, wts_as_delta = TRUE,
-  check_wts = FALSE, normalize_wts = TRUE)
+t_running_kurt5(
+  v,
+  time = NULL,
+  time_deltas = NULL,
+  window = NULL,
+  wts = NULL,
+  lb_time = NULL,
+  na_rm = FALSE,
+  min_df = 0L,
+  used_df = 1,
+  restart_period = 100L,
+  variable_win = FALSE,
+  wts_as_delta = TRUE,
+  check_wts = FALSE,
+  normalize_wts = TRUE
+)
 
-t_running_sd(v, time = NULL, time_deltas = NULL, window = NULL,
-  wts = NULL, lb_time = NULL, na_rm = FALSE, min_df = 0L, used_df = 1,
-  restart_period = 100L, variable_win = FALSE, wts_as_delta = TRUE,
-  check_wts = FALSE, normalize_wts = TRUE)
+t_running_sd(
+  v,
+  time = NULL,
+  time_deltas = NULL,
+  window = NULL,
+  wts = NULL,
+  lb_time = NULL,
+  na_rm = FALSE,
+  min_df = 0L,
+  used_df = 1,
+  restart_period = 100L,
+  variable_win = FALSE,
+  wts_as_delta = TRUE,
+  check_wts = FALSE,
+  normalize_wts = TRUE
+)
 
-t_running_skew(v, time = NULL, time_deltas = NULL, window = NULL,
-  wts = NULL, lb_time = NULL, na_rm = FALSE, min_df = 0L, used_df = 1,
-  restart_period = 100L, variable_win = FALSE, wts_as_delta = TRUE,
-  check_wts = FALSE, normalize_wts = TRUE)
+t_running_skew(
+  v,
+  time = NULL,
+  time_deltas = NULL,
+  window = NULL,
+  wts = NULL,
+  lb_time = NULL,
+  na_rm = FALSE,
+  min_df = 0L,
+  used_df = 1,
+  restart_period = 100L,
+  variable_win = FALSE,
+  wts_as_delta = TRUE,
+  check_wts = FALSE,
+  normalize_wts = TRUE
+)
 
-t_running_kurt(v, time = NULL, time_deltas = NULL, window = NULL,
-  wts = NULL, lb_time = NULL, na_rm = FALSE, min_df = 0L, used_df = 1,
-  restart_period = 100L, variable_win = FALSE, wts_as_delta = TRUE,
-  check_wts = FALSE, normalize_wts = TRUE)
+t_running_kurt(
+  v,
+  time = NULL,
+  time_deltas = NULL,
+  window = NULL,
+  wts = NULL,
+  lb_time = NULL,
+  na_rm = FALSE,
+  min_df = 0L,
+  used_df = 1,
+  restart_period = 100L,
+  variable_win = FALSE,
+  wts_as_delta = TRUE,
+  check_wts = FALSE,
+  normalize_wts = TRUE
+)
 
-t_running_cent_moments(v, time = NULL, time_deltas = NULL, window = NULL,
-  wts = NULL, lb_time = NULL, max_order = 5L, na_rm = FALSE,
-  max_order_only = FALSE, min_df = 0L, used_df = 0,
-  restart_period = 100L, variable_win = FALSE, wts_as_delta = TRUE,
-  check_wts = FALSE, normalize_wts = TRUE)
+t_running_cent_moments(
+  v,
+  time = NULL,
+  time_deltas = NULL,
+  window = NULL,
+  wts = NULL,
+  lb_time = NULL,
+  max_order = 5L,
+  na_rm = FALSE,
+  max_order_only = FALSE,
+  min_df = 0L,
+  used_df = 0,
+  restart_period = 100L,
+  variable_win = FALSE,
+  wts_as_delta = TRUE,
+  check_wts = FALSE,
+  normalize_wts = TRUE
+)
 
-t_running_std_moments(v, time = NULL, time_deltas = NULL, window = NULL,
-  wts = NULL, lb_time = NULL, max_order = 5L, na_rm = FALSE,
-  min_df = 0L, used_df = 0, restart_period = 100L, variable_win = FALSE,
-  wts_as_delta = TRUE, check_wts = FALSE, normalize_wts = TRUE)
+t_running_std_moments(
+  v,
+  time = NULL,
+  time_deltas = NULL,
+  window = NULL,
+  wts = NULL,
+  lb_time = NULL,
+  max_order = 5L,
+  na_rm = FALSE,
+  min_df = 0L,
+  used_df = 0,
+  restart_period = 100L,
+  variable_win = FALSE,
+  wts_as_delta = TRUE,
+  check_wts = FALSE,
+  normalize_wts = TRUE
+)
 
-t_running_cumulants(v, time = NULL, time_deltas = NULL, window = NULL,
-  wts = NULL, lb_time = NULL, max_order = 5L, na_rm = FALSE,
-  min_df = 0L, used_df = 0, restart_period = 100L, variable_win = FALSE,
-  wts_as_delta = TRUE, check_wts = FALSE, normalize_wts = TRUE)
+t_running_cumulants(
+  v,
+  time = NULL,
+  time_deltas = NULL,
+  window = NULL,
+  wts = NULL,
+  lb_time = NULL,
+  max_order = 5L,
+  na_rm = FALSE,
+  min_df = 0L,
+  used_df = 0,
+  restart_period = 100L,
+  variable_win = FALSE,
+  wts_as_delta = TRUE,
+  check_wts = FALSE,
+  normalize_wts = TRUE
+)
 }
 \arguments{
 \item{v}{a vector of data.}
@@ -233,19 +344,19 @@ xs4 <- t_running_skew4(x,time=seq_along(x),lb_time=(length(x) / 2) + 0:10,window
 }
 \references{
 Terriberry, T. "Computing Higher-Order Moments Online."
-\url{http://people.xiph.org/~tterribe/notes/homs.html}
+\url{https://web.archive.org/web/20140423031833/http://people.xiph.org/~tterribe/notes/homs.html}
 
 J. Bennett, et. al., "Numerically Stable, Single-Pass, 
 Parallel Statistics Algorithms," Proceedings of IEEE
 International Conference on Cluster Computing, 2009.
-\url{https://www.semanticscholar.org/paper/Numerically-stable-single-pass-parallel-statistics-Bennett-Grout/a83ed72a5ba86622d5eb6395299b46d51c901265}
+\doi{10.1109/CLUSTR.2009.5289161}
 
 Cook, J. D. "Accurately computing running variance."
-\url{http://www.johndcook.com/standard_deviation.html}
+\url{https://www.johndcook.com/standard_deviation/}
 
 Cook, J. D. "Comparing three methods of computing 
 standard deviation."
-\url{http://www.johndcook.com/blog/2008/09/26/comparing-three-methods-of-computing-standard-deviation}
+\url{https://www.johndcook.com/blog/2008/09/26/comparing-three-methods-of-computing-standard-deviation/}
 }
 \seealso{
 \code{\link{running_sd3}}.

@@ -70,7 +70,7 @@
 #' @importFrom methods new 
 #' @exportPattern "^[[:alpha:]]+"
 #'
-NULL
+"_PACKAGE"
 
 #' @title News for package 'fromo':
 #'
@@ -81,6 +81,12 @@ NULL
 #' \newcommand{\CRANpkg}{\href{https://cran.r-project.org/package=#1}{\pkg{#1}}}
 #' \newcommand{\cranfromo}{\CRANpkg{fromo}}
 #' \newcommand{\fromo}{\href{https://github.com/shabbychef/fromo}}
+#'
+#' @section \fromo{} Version 0.2.2 (2024-11-03) :
+#' \itemize{
+#' \item fix \code{t_running_sum} and others to act as documented when
+#' \code{variable_win} is flagged.
+#' }
 #'
 #' @section \fromo{} Version 0.2.1 (2019-01-29) :
 #' \itemize{

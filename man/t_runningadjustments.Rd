@@ -8,30 +8,92 @@
 \alias{t_running_tstat}
 \title{Compare data to moments computed over a time sliding window.}
 \usage{
-t_running_centered(v, time = NULL, time_deltas = NULL, window = NULL,
-  wts = NULL, na_rm = FALSE, min_df = 0L, used_df = 1, lookahead = 0,
-  restart_period = 100L, variable_win = FALSE, wts_as_delta = TRUE,
-  check_wts = FALSE, normalize_wts = TRUE)
+t_running_centered(
+  v,
+  time = NULL,
+  time_deltas = NULL,
+  window = NULL,
+  wts = NULL,
+  na_rm = FALSE,
+  min_df = 0L,
+  used_df = 1,
+  lookahead = 0,
+  restart_period = 100L,
+  variable_win = FALSE,
+  wts_as_delta = TRUE,
+  check_wts = FALSE,
+  normalize_wts = TRUE
+)
 
-t_running_scaled(v, time = NULL, time_deltas = NULL, window = NULL,
-  wts = NULL, na_rm = FALSE, min_df = 0L, used_df = 1, lookahead = 0,
-  restart_period = 100L, variable_win = FALSE, wts_as_delta = TRUE,
-  check_wts = FALSE, normalize_wts = TRUE)
+t_running_scaled(
+  v,
+  time = NULL,
+  time_deltas = NULL,
+  window = NULL,
+  wts = NULL,
+  na_rm = FALSE,
+  min_df = 0L,
+  used_df = 1,
+  lookahead = 0,
+  restart_period = 100L,
+  variable_win = FALSE,
+  wts_as_delta = TRUE,
+  check_wts = FALSE,
+  normalize_wts = TRUE
+)
 
-t_running_zscored(v, time = NULL, time_deltas = NULL, window = NULL,
-  wts = NULL, na_rm = FALSE, min_df = 0L, used_df = 1, lookahead = 0,
-  restart_period = 100L, variable_win = FALSE, wts_as_delta = TRUE,
-  check_wts = FALSE, normalize_wts = TRUE)
+t_running_zscored(
+  v,
+  time = NULL,
+  time_deltas = NULL,
+  window = NULL,
+  wts = NULL,
+  na_rm = FALSE,
+  min_df = 0L,
+  used_df = 1,
+  lookahead = 0,
+  restart_period = 100L,
+  variable_win = FALSE,
+  wts_as_delta = TRUE,
+  check_wts = FALSE,
+  normalize_wts = TRUE
+)
 
-t_running_sharpe(v, time = NULL, time_deltas = NULL, window = NULL,
-  wts = NULL, lb_time = NULL, na_rm = FALSE, compute_se = FALSE,
-  min_df = 0L, used_df = 1, restart_period = 100L, variable_win = FALSE,
-  wts_as_delta = TRUE, check_wts = FALSE, normalize_wts = TRUE)
+t_running_sharpe(
+  v,
+  time = NULL,
+  time_deltas = NULL,
+  window = NULL,
+  wts = NULL,
+  lb_time = NULL,
+  na_rm = FALSE,
+  compute_se = FALSE,
+  min_df = 0L,
+  used_df = 1,
+  restart_period = 100L,
+  variable_win = FALSE,
+  wts_as_delta = TRUE,
+  check_wts = FALSE,
+  normalize_wts = TRUE
+)
 
-t_running_tstat(v, time = NULL, time_deltas = NULL, window = NULL,
-  wts = NULL, lb_time = NULL, na_rm = FALSE, compute_se = FALSE,
-  min_df = 0L, used_df = 1, restart_period = 100L, variable_win = FALSE,
-  wts_as_delta = TRUE, check_wts = FALSE, normalize_wts = TRUE)
+t_running_tstat(
+  v,
+  time = NULL,
+  time_deltas = NULL,
+  window = NULL,
+  wts = NULL,
+  lb_time = NULL,
+  na_rm = FALSE,
+  compute_se = FALSE,
+  min_df = 0L,
+  used_df = 1,
+  restart_period = 100L,
+  variable_win = FALSE,
+  wts_as_delta = TRUE,
+  check_wts = FALSE,
+  normalize_wts = TRUE
+)
 }
 \arguments{
 \item{v}{a vector of data.}
@@ -193,19 +255,19 @@ is over a set of a single index, and most moments are underdefined.
 
 \references{
 Terriberry, T. "Computing Higher-Order Moments Online."
-\url{http://people.xiph.org/~tterribe/notes/homs.html}
+\url{https://web.archive.org/web/20140423031833/http://people.xiph.org/~tterribe/notes/homs.html}
 
 J. Bennett, et. al., "Numerically Stable, Single-Pass, 
 Parallel Statistics Algorithms," Proceedings of IEEE
 International Conference on Cluster Computing, 2009.
-\url{https://www.semanticscholar.org/paper/Numerically-stable-single-pass-parallel-statistics-Bennett-Grout/a83ed72a5ba86622d5eb6395299b46d51c901265}
+\doi{10.1109/CLUSTR.2009.5289161}
 
 Cook, J. D. "Accurately computing running variance."
-\url{http://www.johndcook.com/standard_deviation.html}
+\url{https://www.johndcook.com/standard_deviation/}
 
 Cook, J. D. "Comparing three methods of computing 
 standard deviation."
-\url{http://www.johndcook.com/blog/2008/09/26/comparing-three-methods-of-computing-standard-deviation}
+\url{https://www.johndcook.com/blog/2008/09/26/comparing-three-methods-of-computing-standard-deviation/}
 }
 \seealso{
 \code{\link{running_centered}}, \code{\link{scale}}
