@@ -191,7 +191,7 @@ class Welford {
         inline int subcount() const { return m_subc; }
 
         // return true if any even order sums are negative
-        inline bool has_heywoord() const {
+        inline bool has_heywood() const {
             if (!ord_beyond) {
                 return (m_xx[2] < 0);
             } else {
@@ -261,7 +261,7 @@ class Welford {
                     m_xx[2] += xb_les_muA * (xval - m_xx[1]);
                 }
             } else {
-                if ((wtA > 0) && (m_ord > 1)) {
+                if ((wtA > 0) && (m_ord > 1) && (muD_les_muA!=0.0)) {
                     div_left = -muD_les_muA;
                     term_left = pow(div_left,m_ord) * wtA;
                     if (has_wts) {
@@ -332,7 +332,7 @@ class Welford {
                     } else {
                         m_xx[2] -= xc_les_muA * (xval - m_xx[1]);
                     }
-                } else {
+                } else if (muD_les_muA != 0.0) {
                     div_left = -muD_les_muA;
                     term_left = pow(div_left,m_ord) * wtA;
                     if (has_wts) {
@@ -676,7 +676,7 @@ NumericVector quasiSumThing(T v,
     return vret;
 }
 
-// ord is largely ignred here;
+// ord is largely ignored here;
 template <typename T,typename W,typename oneW,bool has_wts,bool ord_beyond,bool na_rm>
 void add_many(Welford<oneW,has_wts,ord_beyond,na_rm> & frets,
               T v,
