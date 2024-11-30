@@ -43,7 +43,7 @@ using namespace Rcpp;
 // also there is a std::enable_if thingy which we can
 // use, I think, to do boolean template magic.
 
-template <typename T,ReturnWhat retwhat,typename W,typename oneW,bool has_wts,bool ord_beyond,bool renormalize,bool na_rm>
+template <typename T,ReturnWhat retwhat,typename W,typename oneW,bool has_wts,bool ord_beyond,bool na_rm>
 NumericMatrix runQM(T v,
                     W wts,
                     const int ord,
@@ -53,7 +53,7 @@ NumericMatrix runQM(T v,
                     const int min_df,
                     const double used_df,
                     const bool check_wts,
-                    const bool normalize_wts,
+                    const bool renormalize,
                     const bool check_negative_moments) {
 
     // a bit of a hack here, but you must have ord >= 2 for Welford
@@ -310,21 +310,12 @@ NumericMatrix runQMCurryZero(T v,
                              const bool check_wts,
                              const bool normalize_wts,
                              const bool check_negative_moments) {
-    if (has_wts && normalize_wts) {
-        if (na_rm) {
-            return runQM<T,retwhat,W,oneW,has_wts,ord_beyond,true,true>(v, wts, ord, window, recom_period, lookahead, 
-                                                                        min_df, used_df, check_wts, normalize_wts, check_negative_moments); 
-        } else {
-            return runQM<T,retwhat,W,oneW,has_wts,ord_beyond,true,false>(v, wts, ord, window, recom_period, lookahead, 
-                                                                         min_df, used_df, check_wts, normalize_wts, check_negative_moments); 
-        }
-    } 
     if (na_rm) {
-        return runQM<T,retwhat,W,oneW,has_wts,ord_beyond,false,true>(v, wts, ord, window, recom_period, lookahead, 
-                                                                     min_df, used_df, check_wts, normalize_wts, check_negative_moments); 
+        return runQM<T,retwhat,W,oneW,has_wts,ord_beyond,true>(v, wts, ord, window, recom_period, lookahead, 
+                                                               min_df, used_df, check_wts, normalize_wts, check_negative_moments); 
     } 
-    return runQM<T,retwhat,W,oneW,has_wts,ord_beyond,false,false>(v, wts, ord, window, recom_period, lookahead, 
-                                                                  min_df, used_df, check_wts, normalize_wts, check_negative_moments); 
+    return runQM<T,retwhat,W,oneW,has_wts,ord_beyond,false>(v, wts, ord, window, recom_period, lookahead, 
+                                                            min_df, used_df, check_wts, normalize_wts, check_negative_moments); 
 }
 
 template <typename T,ReturnWhat retwhat,bool ord_beyond>
@@ -393,7 +384,7 @@ NumericMatrix runQMCurryThree(SEXP v,
         case  INTSXP: { return runQMCurryTwo<IntegerVector,retwhat>(v, wts, ord, window, recom_period, lookahead, min_df, used_df, na_rm, check_wts, normalize_wts, check_negative_moments); } 
         case REALSXP: { return runQMCurryTwo<NumericVector,retwhat>(v, wts, ord, window, recom_period, lookahead, min_df, used_df, na_rm, check_wts, normalize_wts, check_negative_moments); } 
         case  LGLSXP: { return runQMCurryTwo<IntegerVector,retwhat>(as<IntegerVector>(v), wts, ord, window, recom_period, lookahead, min_df, used_df, na_rm, check_wts, normalize_wts, check_negative_moments); }  // bools can be upcast to save build size.
-        default: stop("Unsupported weight type"); // #nocov
+        default: stop("Unsupported data type"); // #nocov
     }
     // have to have fallthrough for CRAN check.
     NumericMatrix retv;

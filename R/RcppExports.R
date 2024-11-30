@@ -32,7 +32,7 @@
 #' defaulting to 1, the weighted mean is computed as
 #' \deqn{\mu = \frac{\sum_i x_i w_i}{\sum w_i}.}
 #' The weighted kth central sum is computed as
-#' \deqn{\mu = \sum_i \left(x_i - \mu\right)^k w_i.}
+#' \deqn{S_k = \sum_i \left(x_i - \mu\right)^k w_i.}
 #' Let \eqn{n = \sum_i w_i} be the sum of weights (or number of observations in the unweighted case).
 #' Then the weighted kth central moment is computed as that weighted sum divided by the
 #' adjusted sum weights:
@@ -43,7 +43,14 @@
 #' to the \eqn{k/2} power:
 #' \deqn{\tilde{\mu}_k = \frac{\mu_k}{\mu_2^{k/2}}.}
 #' The (centered) rth cumulant, for \eqn{r \ge 2} is then computed using the formula of Willink, namely
-#' \deqn{\kappa_r = \mu_r - \sum_{j=0}^{r - 2} {r - 1 \choose j} \mu_j \kappa {r-j}.}
+#' \deqn{\kappa_r = \mu_r - \sum_{j=1}^{r - 2} {r - 1 \choose j} \kappa_{r-j} \mu_{j},}
+#' That is
+#' \deqn{\kappa_2 = \mu_2,}
+#' \deqn{\kappa_3 = \mu_3,}
+#' \deqn{\kappa_4 = \mu_4 - 3 \mu_2^2,}
+#' \deqn{\kappa_5 = \mu_5 - 10 \mu_3\mu_2,}
+#' and so on.
+#'
 #' The standardized rth cumulant is the rth centered cumulant divided by \eqn{\mu_2^{r/2}}.
 #'
 #' @return a vector, filled out as follows:
@@ -992,5 +999,211 @@ t_running_sum <- function(v, time = NULL, time_deltas = NULL, window = NULL, wts
 #' @export
 t_running_mean <- function(v, time = NULL, time_deltas = NULL, window = NULL, wts = NULL, lb_time = NULL, na_rm = FALSE, min_df = 0L, restart_period = 10000L, variable_win = FALSE, wts_as_delta = TRUE, check_wts = FALSE) {
     .Call('_fromo_t_running_mean', PACKAGE = 'fromo', v, time, time_deltas, window, wts, lb_time, na_rm, min_df, restart_period, variable_win, wts_as_delta, check_wts)
+}
+
+#' @title
+#' Compute covariance, correlation, regression over a sliding window
+#' @description
+#' Computes 2nd moments and comoments, as well as the means, over
+#' an infinite or finite sliding window, returning a matrix with the 
+#' correlation, covariance, regression coefficient, and so on.
+#' 
+#' @param x a vector
+#' @param y a vector
+#' @param window the window size. if given as finite integer or double, passed through.
+#' If \code{NULL}, \code{NA_integer_}, \code{NA_real_} or \code{Inf} are given, equivalent
+#' to an infinite window size. If negative, an error will be thrown.
+#' @param restart_period the recompute period. because subtraction of elements can cause
+#' loss of precision, the computation of moments is restarted periodically based on 
+#' this parameter. Larger values mean fewer restarts and faster, though less accurate
+#' results. 
+#' @param na_rm whether to remove NA, false by default.
+#' @param min_df the minimum df to return a value, otherwise \code{NaN} is returned.
+#' This can be used to prevent moments from being computed on too few observations.
+#' Defaults to zero, meaning no restriction.
+#' @param used_df the number of degrees of freedom consumed, used in the denominator
+#' of the standard errors computation. These are subtracted from the number of
+#' observations. 
+#'
+#' @details
+#'
+#' Computes the correlation or covariance, or OLS regression coefficients and 
+#' standard errors. 
+#' These are computed via the numerically robust one-pass method of Bennett \emph{et. al.}
+#'
+#' @return Typically a matrix, usually only one row of the output value. More specifically:
+#' \describe{
+#' \item{running_covariance}{Returns a single column of the covariance of \code{x} and \code{y}.}
+#' \item{running_correlation}{Returns a single column of the correlation of \code{x} and \code{y}.}
+#' \item{running_covariance_3}{Returns three columns: the variance of \code{x}, the covariance of \code{x} and \code{y}, and the
+#' variance of \code{y}, in that order.}
+#' \item{running_regression_slope}{Returns a single column of the slope of the OLS regression.}
+#' \item{running_regression_intercept}{Returns a single column of the intercept of the OLS regression.}
+#' \item{running_regression_fit}{Returns two columns: the regression intercept and the regression slope of the OLS regression.}
+#' \item{running_regression_diagnostics}{Returns five columns: the regression intercept, the regression slope, the regression standard error, 
+#' the standard error of the intercept, the standard error of the slope of the OLS regression.}
+#' }
+#'
+#' @examples
+#' x <- rnorm(1e5)
+#' y <- rnorm(1e5) + x
+#' rho <- running_correlation(x, y, window=100L)
+#'
+#' @template etc
+#' @template ref-romo
+#' @template param-wts
+#' @template param-heywood
+#' @template note-wts
+#' @template note-heywood
+#' @rdname two_runningmoments
+#' @export
+running_correlation <- function(x, y, window = NULL, wts = NULL, na_rm = FALSE, min_df = 0L, restart_period = 100L, check_wts = FALSE, check_negative_moments = TRUE) {
+    .Call('_fromo_running_correlation', PACKAGE = 'fromo', x, y, window, wts, na_rm, min_df, restart_period, check_wts, check_negative_moments)
+}
+
+#' @rdname two_runningmoments
+#' @export
+running_covariance <- function(x, y, window = NULL, wts = NULL, na_rm = FALSE, min_df = 0L, used_df = 1.0, restart_period = 100L, check_wts = FALSE, normalize_wts = TRUE, check_negative_moments = TRUE) {
+    .Call('_fromo_running_covariance', PACKAGE = 'fromo', x, y, window, wts, na_rm, min_df, used_df, restart_period, check_wts, normalize_wts, check_negative_moments)
+}
+
+#' @rdname two_runningmoments
+#' @export
+running_covariance_3 <- function(x, y, window = NULL, wts = NULL, na_rm = FALSE, min_df = 0L, used_df = 1.0, restart_period = 100L, check_wts = FALSE, normalize_wts = TRUE, check_negative_moments = TRUE) {
+    .Call('_fromo_running_covariance_3', PACKAGE = 'fromo', x, y, window, wts, na_rm, min_df, used_df, restart_period, check_wts, normalize_wts, check_negative_moments)
+}
+
+#' @rdname two_runningmoments
+#' @export
+running_regression_slope <- function(x, y, window = NULL, wts = NULL, na_rm = FALSE, min_df = 0L, restart_period = 100L, check_wts = FALSE, check_negative_moments = TRUE) {
+    .Call('_fromo_running_regression_slope', PACKAGE = 'fromo', x, y, window, wts, na_rm, min_df, restart_period, check_wts, check_negative_moments)
+}
+
+#' @rdname two_runningmoments
+#' @export
+running_regression_intercept <- function(x, y, window = NULL, wts = NULL, na_rm = FALSE, min_df = 0L, restart_period = 100L, check_wts = FALSE, check_negative_moments = TRUE) {
+    .Call('_fromo_running_regression_intercept', PACKAGE = 'fromo', x, y, window, wts, na_rm, min_df, restart_period, check_wts, check_negative_moments)
+}
+
+#' @rdname two_runningmoments
+#' @export
+running_regression_fit <- function(x, y, window = NULL, wts = NULL, na_rm = FALSE, min_df = 0L, restart_period = 100L, check_wts = FALSE, check_negative_moments = TRUE) {
+    .Call('_fromo_running_regression_fit', PACKAGE = 'fromo', x, y, window, wts, na_rm, min_df, restart_period, check_wts, check_negative_moments)
+}
+
+#' @rdname two_runningmoments
+#' @export
+running_regression_diagnostics <- function(x, y, window = NULL, wts = NULL, na_rm = FALSE, min_df = 0L, used_df = 2.0, restart_period = 100L, check_wts = FALSE, normalize_wts = TRUE, check_negative_moments = TRUE) {
+    .Call('_fromo_running_regression_diagnostics', PACKAGE = 'fromo', x, y, window, wts, na_rm, min_df, used_df, restart_period, check_wts, normalize_wts, check_negative_moments)
+}
+
+#' @title
+#' Compute covariance, correlation, regression over a sliding time-based window
+#' @description
+#' Computes 2nd moments and comoments, as well as the means, over
+#' an infinite or finite sliding time based window, returning a matrix with the 
+#' correlation, covariance, regression coefficient, and so on.
+#' 
+#' @param x a vector
+#' @param y a vector
+#' @param time  an optional vector of the timestamps of \code{x} and \code{y}. If given, must be
+#'  the same length as \code{x} and \code{y}. If not given, we try to infer it by summing the
+#'  \code{time_deltas}.
+#' @param time_deltas  an optional vector of the deltas of timestamps. If given, must be
+#'  the same length as \code{x} and \code{y}. If not given, and \code{wts} are given and \code{wts_as_delta} is true,
+#'  we take the \code{wts} as the time deltas.  The deltas must be positive. We sum them to arrive
+#'  at the times.
+#' @param window the window size, in time units. if given as finite integer or double, passed through.
+#' If \code{NULL}, \code{NA_integer_}, \code{NA_real_} or \code{Inf} are given, 
+#'  and \code{variable_win} is true, then we infer the window from the lookback times: the
+#'  first window is infinite, but the remaining is the deltas between lookback times.
+#'  If \code{variable_win} is false, then these undefined values are equivalent to an
+#'  infinite window.
+#'  If negative, an error will be thrown.
+#' @param lb_time  a vector of the times from which lookback will be performed. The output should
+#'  be the same size as this vector. If not given, defaults to \code{time}.
+#' @param na_rm whether to remove NA, false by default.
+#' @param min_df the minimum df to return a value, otherwise \code{NaN} is returned.
+#' This can be used to prevent moments from being computed on too few observations.
+#' Defaults to zero, meaning no restriction.
+#' @param used_df the number of degrees of freedom consumed, used in the denominator
+#' of the standard errors computation. These are subtracted from the number of
+#' observations. 
+#' @param variable_win  if true, and the \code{window} is not a concrete number,
+#'  the computation window becomes the time between lookback times.
+#' @param wts_as_delta  if true and the \code{time} and \code{time_deltas} are not
+#' given, but \code{wts} are given, we take \code{wts} as the \code{time_deltas}.
+#' @details
+#'
+#' Computes the correlation or covariance, or OLS regression coefficients and 
+#' standard errors. 
+#' These are computed via the numerically robust one-pass method of Bennett \emph{et. al.}
+#' @template sec-t-win
+#'
+#' @return Typically a matrix, usually only one row of the output value. More specifically:
+#' \describe{
+#' \item{running_covariance}{Returns a single column of the covariance of \code{x} and \code{y}.}
+#' \item{running_correlation}{Returns a single column of the correlation of \code{x} and \code{y}.}
+#' \item{running_covariance_3}{Returns three columns: the variance of \code{x}, the covariance of \code{x} and \code{y}, and the
+#' variance of \code{y}, in that order.}
+#' \item{running_regression_slope}{Returns a single column of the slope of the OLS regression.}
+#' \item{running_regression_intercept}{Returns a single column of the intercept of the OLS regression.}
+#' \item{running_regression_fit}{Returns two columns: the regression intercept and the regression slope of the OLS regression.}
+#' \item{running_regression_diagnostics}{Returns five columns: the regression intercept, the regression slope, the regression standard error, 
+#' the standard error of the intercept, the standard error of the slope of the OLS regression.}
+#' }
+#'
+#' @examples
+#' x <- rnorm(1e5)
+#' y <- rnorm(1e5) + x
+#' rho <- t_running_correlation(x, y, time=seq_along(x), window=100L)
+#'
+#' @inheritParams running_sd3
+#' @template etc
+#' @template ref-romo
+#' @template param-wts
+#' @template param-heywood
+#' @template note-wts
+#' @template note-heywood
+#' @rdname two_t_runningmoments
+#' @export
+t_running_correlation <- function(x, y, time = NULL, time_deltas = NULL, window = NULL, wts = NULL, lb_time = NULL, na_rm = FALSE, min_df = 0L, restart_period = 100L, variable_win = FALSE, wts_as_delta = TRUE, check_wts = FALSE, check_negative_moments = TRUE) {
+    .Call('_fromo_t_running_correlation', PACKAGE = 'fromo', x, y, time, time_deltas, window, wts, lb_time, na_rm, min_df, restart_period, variable_win, wts_as_delta, check_wts, check_negative_moments)
+}
+
+#' @rdname two_t_runningmoments
+#' @export
+t_running_covariance <- function(x, y, time = NULL, time_deltas = NULL, window = NULL, wts = NULL, lb_time = NULL, na_rm = FALSE, min_df = 0L, used_df = 1.0, restart_period = 100L, variable_win = FALSE, wts_as_delta = TRUE, check_wts = FALSE, normalize_wts = TRUE, check_negative_moments = TRUE) {
+    .Call('_fromo_t_running_covariance', PACKAGE = 'fromo', x, y, time, time_deltas, window, wts, lb_time, na_rm, min_df, used_df, restart_period, variable_win, wts_as_delta, check_wts, normalize_wts, check_negative_moments)
+}
+
+#' @rdname two_t_runningmoments
+#' @export
+t_running_covariance_3 <- function(x, y, time = NULL, time_deltas = NULL, window = NULL, wts = NULL, lb_time = NULL, na_rm = FALSE, min_df = 0L, used_df = 1.0, restart_period = 100L, variable_win = FALSE, wts_as_delta = TRUE, check_wts = FALSE, normalize_wts = TRUE, check_negative_moments = TRUE) {
+    .Call('_fromo_t_running_covariance_3', PACKAGE = 'fromo', x, y, time, time_deltas, window, wts, lb_time, na_rm, min_df, used_df, restart_period, variable_win, wts_as_delta, check_wts, normalize_wts, check_negative_moments)
+}
+
+#' @rdname two_t_runningmoments
+#' @export
+t_running_regression_slope <- function(x, y, time = NULL, time_deltas = NULL, window = NULL, wts = NULL, lb_time = NULL, na_rm = FALSE, min_df = 0L, restart_period = 100L, variable_win = FALSE, wts_as_delta = TRUE, check_wts = FALSE, check_negative_moments = TRUE) {
+    .Call('_fromo_t_running_regression_slope', PACKAGE = 'fromo', x, y, time, time_deltas, window, wts, lb_time, na_rm, min_df, restart_period, variable_win, wts_as_delta, check_wts, check_negative_moments)
+}
+
+#' @rdname two_t_runningmoments
+#' @export
+t_running_regression_intercept <- function(x, y, time = NULL, time_deltas = NULL, window = NULL, wts = NULL, lb_time = NULL, na_rm = FALSE, min_df = 0L, restart_period = 100L, variable_win = FALSE, wts_as_delta = TRUE, check_wts = FALSE, check_negative_moments = TRUE) {
+    .Call('_fromo_t_running_regression_intercept', PACKAGE = 'fromo', x, y, time, time_deltas, window, wts, lb_time, na_rm, min_df, restart_period, variable_win, wts_as_delta, check_wts, check_negative_moments)
+}
+
+#' @rdname two_t_runningmoments
+#' @export
+t_running_regression_fit <- function(x, y, time = NULL, time_deltas = NULL, window = NULL, wts = NULL, lb_time = NULL, na_rm = FALSE, min_df = 0L, restart_period = 100L, variable_win = FALSE, wts_as_delta = TRUE, check_wts = FALSE, check_negative_moments = TRUE) {
+    .Call('_fromo_t_running_regression_fit', PACKAGE = 'fromo', x, y, time, time_deltas, window, wts, lb_time, na_rm, min_df, restart_period, variable_win, wts_as_delta, check_wts, check_negative_moments)
+}
+
+#' @rdname two_t_runningmoments
+#' @export
+t_running_regression_diagnostics <- function(x, y, time = NULL, time_deltas = NULL, window = NULL, wts = NULL, lb_time = NULL, na_rm = FALSE, min_df = 0L, used_df = 2.0, restart_period = 100L, variable_win = FALSE, wts_as_delta = TRUE, check_wts = FALSE, normalize_wts = TRUE, check_negative_moments = TRUE) {
+    .Call('_fromo_t_running_regression_diagnostics', PACKAGE = 'fromo', x, y, time, time_deltas, window, wts, lb_time, na_rm, min_df, used_df, restart_period, variable_win, wts_as_delta, check_wts, normalize_wts, check_negative_moments)
 }
 
